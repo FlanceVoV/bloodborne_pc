@@ -26,26 +26,26 @@ struct Effect {
     bool default_on;
 };
 inline constexpr Effect Effects[] = {
-    {"effect_chromatic_aberration", "Хроматическая аберрация", true},
-    {"effect_dof", "Глубина резкости (DoF)", true},
-    {"effect_motion_blur", "Размытие в движении", true},
-    {"effect_ssao", "Затенение SSAO", true},
-    {"effect_game_aa", "Собственное сглаживание игры", true},
-    {"effect_dynamic_shadows", "Тени от динамических источников", true},
-    {"effect_ssr", "Отражения SSR (не было в игре)", false},
-    {"skip_intro", "Пропуск заставок при запуске", false},
-    {"debug_camera", "Свободная камера (Cross + L3)", false},
-    {"debug_menu", "Debug menu (нужны файлы шрифтов)", false},
-    {"cheat_no_death", "Чит: бессмертие (не ниже 1 HP)", false},
-    {"cheat_stealth", "Чит: враги не замечают", false},
-    {"cheat_silent", "Чит: враги не слышат", false},
-    {"cheat_rally_no_decay", "Чит: Rally не угасает", false},
-    {"cheat_enemy_control", "Чит: управление врагом (R3 / L3)", false},
-    {"tweak_no_rally", "Без Rally (возврата HP)", false},
-    {"tweak_camera_distance", "Камера дальше", false},
-    {"tweak_no_camera_rotation", "Без автоповорота камеры", false},
-    {"tweak_easy_run", "Бег с меньшим наклоном стика", false},
-    {"tweak_ragdoll", "Физика тел как в Dark Souls", false},
+    {"effect_chromatic_aberration", "色差", true},
+    {"effect_dof", "景深 (DoF)", true},
+    {"effect_motion_blur", "动态模糊", true},
+    {"effect_ssao", "环境光遮蔽 (SSAO)", true},
+    {"effect_game_aa", "游戏自带抗锯齿", true},
+    {"effect_dynamic_shadows", "动态光源阴影", true},
+    {"effect_ssr", "屏幕空间反射 (SSR，原版未提供)", false},
+    {"skip_intro", "启动时跳过片头", false},
+    {"debug_camera", "自由镜头 (Cross + L3)", false},
+    {"debug_menu", "调试菜单（需要字体文件）", false},
+    {"cheat_no_death", "作弊：不会死亡（至少保留 1 HP）", false},
+    {"cheat_stealth", "作弊：敌人无法发现玩家", false},
+    {"cheat_silent", "作弊：敌人听不到玩家", false},
+    {"cheat_rally_no_decay", "作弊：反击回血不会衰减", false},
+    {"cheat_enemy_control", "作弊：控制敌人 (R3 / L3)", false},
+    {"tweak_no_rally", "关闭反击回血", false},
+    {"tweak_camera_distance", "拉远镜头", false},
+    {"tweak_no_camera_rotation", "关闭镜头自动旋转", false},
+    {"tweak_easy_run", "降低奔跑所需摇杆幅度", false},
+    {"tweak_ragdoll", "使用 Dark Souls 风格的布娃娃物理", false},
 };
 inline constexpr int EffectCount = int(sizeof(Effects) / sizeof(Effects[0]));
 /// Live output resolutions: the upscaler's output and the UI host targets.
@@ -116,3 +116,4 @@ const char* PresetName(int preset);
 const char* UpscalerName(int upscaler);
 
 } // namespace BbSettings
+
