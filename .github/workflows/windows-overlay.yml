@@ -4,6 +4,7 @@ on:
   push:
     branches: [windows]
     paths:
+      - 'build.sh'
       - 'gpu/shim/bbport_overlay.cpp'
       - 'gpu/shim/bbport_settings.cpp'
       - 'gpu/shim/bbport_settings.h'
