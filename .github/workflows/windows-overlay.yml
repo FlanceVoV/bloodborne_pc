@@ -5,6 +5,7 @@ on:
     branches: [windows]
     paths:
       - 'build.sh'
+      - 'packaging/windows/msys-compat.h'
       - 'gpu/shim/bbport_overlay.cpp'
       - 'gpu/shim/bbport_settings.cpp'
       - 'gpu/shim/bbport_settings.h'
