@@ -43,8 +43,8 @@ NO_WINDOW = getattr(subprocess, 'CREATE_NO_WINDOW', 0)
 VERSION = '1.6'
 # Co-op: the community server that answers the game's own server requests.
 COMMUNITY_SERVER = 'https://thehuntersdream.com'
-RELEASES_API = 'https://api.github.com/repos/Supermedo/bloodborne_pc/releases/latest'
-RELEASES_PAGE = 'https://github.com/Supermedo/bloodborne_pc/releases/latest'
+RELEASES_API = 'https://api.github.com/repos/FlanceVoV/bloodborne_pc/releases/latest'
+RELEASES_PAGE = 'https://github.com/FlanceVoV/bloodborne_pc/releases'
 UPDATE_DIR = Path(tempfile.gettempdir()) / 'bbport-update'
 # Never copied over an installation by an update (the package does not hold them either).
 USER_FILES = ('user', 'out', 'mods', 'bbport.ini', 'mods.json', 'patches.json', 'last_run.log')
@@ -101,6 +101,7 @@ def run_command():
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bbport_lang  # noqa: E402
+import bbport_lobby  # noqa: E402
 
 LANG = 'en'
 
@@ -173,7 +174,8 @@ APP_DEFAULTS = {'ui_language': '', 'game_dir': str(PORT_DIR.parent / 'CUSA03173'
                 'vk_validation': False, 'extra_env': '', 'close_on_play': False,
                 'check_updates': True, 'online': False, 'online_server': 'srv.shadps4.net:31313',
                 'online_webapi': '', 'online_npid': '', 'online_password': '', 'online_upnp': True,
-                'online_community': COMMUNITY_SERVER}
+                'online_community': COMMUNITY_SERVER,
+                'lobby_url': 'http://127.0.0.1:18080', 'lobby_server_id': 0}
 
 UPSCALERS = [('dlss', ('DLSS (NVIDIA GeForce RTX)',)),
              ('fsr4', ('FSR 4 (best quality)', 'FSR 4 (лучшее качество)')),
@@ -374,6 +376,10 @@ def game_environment(s):
         env['BB_SHADNET_PASSWORD'] = str(s['online_password'])
         env['BB_UPNP'] = '1' if s['online_upnp'] else '0'
         env['BB_COMMUNITY_SERVER'] = community_address(s['online_community'])
+        if s.get('lobby_server_id') and s.get('lobby_url'):
+            env['BB_LOBBY_URL'] = str(s['lobby_url']).strip()
+            env['BB_LOBBY_SERVER_ID'] = str(s['lobby_server_id'])
+            env['BB_LOBBY_NPID'] = str(s['online_npid']).strip()
     env['PYTHONUNBUFFERED'] = '1'
     env['PYTHONIOENCODING'] = 'utf-8'
     return env
@@ -892,12 +898,29 @@ class Launcher:
         self.check(f, 'online', 'app', _('Play online'),
                    _('Off: the game stays offline, as before.'))
         self.var('online', 'app').trace_add('write', lambda *_a: self.refresh_status())
+        self.section(f, '联机大厅')
+        self.row(f, '大厅地址', ttk.Entry(f, textvariable=self.var('lobby_url', 'app'), width=40),
+                 '默认连接本机大厅；远程玩家填服务器提供的 HTTP(S) 地址。')
+        def select_lobby_server(item):
+            self.var('online_server', 'app').set(f"{item['host']}:{item['port']}")
+            self.var('online_webapi', 'app').set(item['webapi_url'])
+            self.var('online_community', 'app').set(item['community_url'])
+            self.var('lobby_server_id', 'app').set(item['id'])
+            self.var('online', 'app').set(True)
+            self.refresh_status()
+        def browse_lobby():
+            bbport_lobby.open_lobby(self.root, self.var('lobby_url', 'app').get(),
+                                    f'supermedo-windows-v{VERSION}', self.var('online_npid', 'app'),
+                                    self.var('online_password', 'app'), select_lobby_server, DATA_DIR,
+                                    self.ui_calls)
+        self.row(f, '', ttk.Button(f, text='打开联机大厅', command=browse_lobby))
         self.section(f, _('Game server (messages, bloodstains, ghosts)'))
         community = self.var('online_community', 'app')
         self.row(f, _('Game server'), ttk.Entry(f, textvariable=community, width=40),
                  _('The Hunter\'s Dream by default. Only the name is needed; the game picks the ports.'))
         self.section(f, _('Co-op server (bells and summons)'))
         server = self.var('online_server', 'app')
+        server.trace_add('write', lambda *_a: self.var('lobby_server_id', 'app').set(0))
         self.row(f, _('Server address'), ttk.Entry(f, textvariable=server, width=40),
                  _('srv.shadps4.net:31313 is the public shadPS4 server. For a private server, enter '
                    'host:port from the person who runs it.'))

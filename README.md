@@ -74,6 +74,19 @@ Everyone you want to play with needs game version 1.09 and the same co-op server
 shadNet server (from the [shadp2p](https://github.com/Wozzardman/shadp2p) project) works too:
 put its address in **Server address**.
 
+### Optional self-hosted lobby
+
+This fork adds an **Open lobby** button to the Windows launcher's Online co-op page. Set its
+lobby URL to a [bloodborne_pc_server](https://github.com/FlanceVoV/bloodborne_pc_server)
+instance. The launcher lists servers and mods for the `supermedo-windows-v1.6` compatibility
+profile. Choose a server, enter that server's shadNet NPID/password, and press **PLAY**.
+The password is sent to shadNet by the game, not to the lobby. While the game runs, the lobby
+receives a separate presence heartbeat for approximate online counts. The lobby can install
+SHA-256-verified ZIP mods into the normal `mods/` folder after saving a backup.
+
+The lobby is optional. Manual server fields still work. Player-hosted servers need a reachable
+address or shared private network; the lobby currently does not relay peer game packets.
+
 ## Known issues
 
 - The character preview on the character creation screen stays empty. The character is

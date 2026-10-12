@@ -16,6 +16,53 @@ import shutil
 import subprocess
 import sys
 
+
+def lobby_session(env):
+    """Report approximate launcher presence without sending the shadNet password."""
+    base = env.get('BB_LOBBY_URL', '').rstrip('/')
+    server_id = env.get('BB_LOBBY_SERVER_ID', '')
+    npid = env.get('BB_LOBBY_NPID', '')
+    if not (base and server_id and npid):
+        return None
+    import threading
+    import urllib.request
+    try:
+        body = json.dumps({'npid': npid, 'server_id': int(server_id)}).encode()
+        request = urllib.request.Request(base + '/api/v1/connections/start', data=body,
+                                         headers={'Content-Type': 'application/json'}, method='POST')
+        with urllib.request.urlopen(request, timeout=3) as reply:
+            info = json.load(reply)
+    except (OSError, ValueError, KeyError) as error:
+        print(f'Lobby presence unavailable: {error}')
+        return None
+    path = f"{base}/api/v1/connections/{info['connection_id']}"
+    auth = {'Authorization': f"Bearer {info['token']}"}
+    stop = threading.Event()
+    def heartbeat():
+        while not stop.wait(45):
+            try:
+                urllib.request.urlopen(urllib.request.Request(path + '/heartbeat', data=b'{}',
+                                       headers=auth, method='POST'), timeout=3).close()
+            except OSError:
+                pass
+    thread = threading.Thread(target=heartbeat, daemon=True)
+    thread.start()
+    return path, auth, stop, thread
+
+
+def lobby_session_end(session):
+    if not session:
+        return
+    import urllib.request
+    path, auth, stop, thread = session
+    stop.set()
+    thread.join(timeout=1)
+    try:
+        urllib.request.urlopen(urllib.request.Request(path + '/end', data=b'{}',
+                               headers=auth, method='POST'), timeout=3).close()
+    except OSError:
+        pass
+
 PORT = Path(__file__).resolve().parent
 
 
@@ -221,7 +268,11 @@ def main():
                    '--user', str(user_dir),
                    '--timeout', env.get('BB_TIMEOUT', '0'), *args]
         # No stdin: an inherited pipe (shells such as Git Bash) cost the game its console output.
-        return subprocess.run(command, stdin=subprocess.DEVNULL, creationflags=no_console()).returncode
+        presence = lobby_session(env) if env.get('BB_ONLINE') == '1' else None
+        try:
+            return subprocess.run(command, stdin=subprocess.DEVNULL, creationflags=no_console()).returncode
+        finally:
+            lobby_session_end(presence)
     finally:
         if mod_view:
             shutil.rmtree(mod_view, ignore_errors=True)
