@@ -20,6 +20,10 @@ MINGW*|MSYS*)
             git -C gpu/third_party/fsr-vulkan apply "$PWD/$patch"
         fi
     done
+    # FidelityFX 1.1.4 uses a couple of MSVC runtime names that MinGW does not
+    # provide. Supply compatible definitions to the Windows C++ compilation.
+    compat_header=$(cygpath -m "$PWD/packaging/windows/msys-compat.h")
+    export CXXFLAGS="${CXXFLAGS:-} -include $compat_header"
     cmake -S gpu -B out/gpu -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBB_PGO=off \
         -DBB_LTO="${BB_LTO:-OFF}" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ >/dev/null
     echo "GPU library and loader: LTO ${BB_LTO:-OFF}"
