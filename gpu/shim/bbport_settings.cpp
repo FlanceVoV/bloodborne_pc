@@ -213,8 +213,8 @@ float PresetScale(int preset) {
 }
 
 const char* PresetName(int preset) {
-    static constexpr const char* names[PresetCount] = {"Native AA", "Quality", "Balanced",
-                                                       "Performance", "Ultra Performance"};
+    static constexpr const char* names[PresetCount] = {"原生抗锯齿", "质量", "均衡",
+                                                       "性能", "极致性能"};
     return names[std::clamp(preset, 0, PresetCount - 1)];
 }
 
@@ -224,3 +224,4 @@ const char* UpscalerName(int upscaler) {
 }
 
 } // namespace BbSettings
+
