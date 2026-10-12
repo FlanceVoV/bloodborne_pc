@@ -10,6 +10,10 @@ on:
       - '.github/workflows/windows-overlay.yml'
   workflow_dispatch:
 
+concurrency:
+  group: windows-overlay-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
